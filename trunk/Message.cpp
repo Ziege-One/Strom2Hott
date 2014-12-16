@@ -50,7 +50,8 @@ struct HOTT_TEXTMODE_MSG	*hott_txt_msg =	(struct HOTT_TEXTMODE_MSG *)&_hott_seri
 int alarm_on_off_batt1 = 1; // 0=FALSE/Disable 1=TRUE/Enable   // Enable alarm by default for safety
 char* alarm_on_off[13];      // For Radio OSD
 char* model_config[15];      // For Radio OSD
-static uint16_t alarm_min1 = 1350; // Min volt for alarm in mV
+static uint16_t alarm_min_volt = 900; // Min volt for alarm in mV
+static uint16_t alarm_max_used = 1800; // Max Current Use for alarm in mA
 // Timer for alarm
 // for refresh time
 int alarm_interval = 15000; // in ms
@@ -82,8 +83,8 @@ uint8_t Jauge = 0;           // fuel gauge
  Be careful not to use it too much, it is not replacable!
  */
 #define adr_eprom_test 0                 // For the test for 1st time init of the Arduino (First power on)
-#define adr_eprom_alarm_min1 2           // Default alarm min is 3.60v
-#define adr_eprom_nb_cells_batt1 4       // Automaticaly detected and calculated
+#define adr_eprom_alarm_min_volt 2       // Default alarm min is 9.00v
+#define adr_eprom_alarm_max_used 4       // Default alarm max is 1800mA
 #define adr_eprom_alarm_on_off_batt1 6   // 0=FALSE/Disable 1=TRUE/Enable
 #define adr_eprom_alarm_interval 8       // Audio warning alarm interval 
 
@@ -101,15 +102,20 @@ void GMessage::init(){
   if (test != 123)
   {
     write_eprom(adr_eprom_test,123);
-    write_eprom(adr_eprom_alarm_min1,alarm_min1);
+    write_eprom(adr_eprom_alarm_min_volt,alarm_min_volt);
+    write_eprom(adr_eprom_alarm_max_used,alarm_max_used);
+    write_eprom(adr_eprom_alarm_interval,alarm_interval);
     write_eprom(adr_eprom_alarm_on_off_batt1,alarm_on_off_batt1);
   }
   // Read saved values from EEPROM
     // alarm min on battery
-    alarm_min1 = read_eprom(adr_eprom_alarm_min1); // default is 3.60v if not change
+    alarm_min_volt = read_eprom(adr_eprom_alarm_min_volt); // default is 9.00v if not change
+    // alarm max on used mA
+    alarm_max_used = read_eprom(adr_eprom_alarm_max_used); // default is 1800mA if not change
+    // Timer for alarm
+    alarm_interval = read_eprom(adr_eprom_alarm_interval); // default is 15000 ms if not change
     // Enable / Disable alarm bip
     alarm_on_off_batt1 = read_eprom(adr_eprom_alarm_on_off_batt1); // 0=FALSE/Disable 1=TRUE/Enable
-    alarm_interval = read_eprom(adr_eprom_alarm_interval);
 
     
 
@@ -219,10 +225,14 @@ void GMessage::main_loop(){
                if (time-lastTime>alarm_interval)  // if at least alarm_interval in ms have passed
                {
                      // Check for alarm beep
-                     if (((lipo_mini_bat1*100) < alarm_min1) && alarm_on_off_batt1 == 1)
+                     if (((lipo.getVolt ()*100) < alarm_min_volt) && alarm_on_off_batt1 == 1)
                      {
                      hott_txt_msg->warning_beeps =  ALARME_TENSION_SEUIL    ; // alarm beep or voice
                      }
+                     if (((lipo.getBattCap()) > alarm_max_used) && alarm_on_off_batt1 == 1)
+                     {
+                     hott_txt_msg->warning_beeps =  0x16    ; // alarm beep or voice
+                     }                      
                  lastTime=time;  // reset timer
                }
             
@@ -281,7 +291,7 @@ void GMessage::main_loop(){
                     if (id_key == HOTT_KEY_UP && ligne_edit == -1)
                     ligne_select = min(6,ligne_select+1); // never gets above line 6 max
                     else if (id_key == HOTT_KEY_DOWN && ligne_edit == -1)
-                    ligne_select = max(4,ligne_select-1); // never gets above line 4 min
+                    ligne_select = max(3,ligne_select-1); // never gets above line 4 min
                     else if (id_key == HOTT_KEY_SET && ligne_edit == -1)
                     ligne_edit =  ligne_select ;
                     else if (id_key == HOTT_KEY_RIGHT && ligne_edit == -1)
@@ -294,45 +304,62 @@ void GMessage::main_loop(){
                       
                       
                       
-                    //LINE 4 SELECTED = text[4]
-                    else if (id_key == HOTT_KEY_UP && ligne_select == 4 )
+                    //LINE 3 SELECTED = text[3]
+                    else if (id_key == HOTT_KEY_UP && ligne_select == 3 )
                       {
                         alarm_on_off_batt1 = 1;
                         *alarm_on_off = " Alarm :  ON";
                       }
                       
-                    else if (id_key == HOTT_KEY_DOWN && ligne_select == 4 )
+                    else if (id_key == HOTT_KEY_DOWN && ligne_select == 3 )
                       {
                         alarm_on_off_batt1 = 0;
                         *alarm_on_off = " Alarm : OFF";
                        }
                       
-                    else if (id_key == HOTT_KEY_SET && ligne_edit == 4)
+                    else if (id_key == HOTT_KEY_SET && ligne_edit == 3)
                       {
                        ligne_edit = -1 ;
                        write_eprom(adr_eprom_alarm_on_off_batt1,alarm_on_off_batt1);
                        }
                     
                     
+                    //LINE 4 SELECTED = text[4]
+                    else if (id_key == HOTT_KEY_UP && ligne_select == 4 )
+                      alarm_min_volt+=5;
+                    else if (id_key == HOTT_KEY_DOWN && ligne_select == 4 )
+                      alarm_min_volt-=5;
+                    else if (id_key == HOTT_KEY_SET && ligne_edit == 4)
+                      {
+                       ligne_edit = -1 ;
+                       write_eprom(adr_eprom_alarm_min_volt,alarm_min_volt);
+                       }
+
+                    else if (alarm_min_volt>1820) // not over 18.2v
+                        {
+                          alarm_min_volt=5;
+                        } 
+                    else if (alarm_min_volt<1)  // not behind 0v
+                        {
+                       alarm_min_volt=420;
+                        }
+
                     //LINE 5 SELECTED = text[5]
                     else if (id_key == HOTT_KEY_UP && ligne_select == 5 )
-                      alarm_min1+=5;
+                      alarm_max_used+=100;
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 5 )
-                      alarm_min1-=5;
+                      alarm_max_used-=100;
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 5)
                       {
                        ligne_edit = -1 ;
-                       write_eprom(adr_eprom_alarm_min1,alarm_min1);
+                       write_eprom(adr_eprom_alarm_max_used,alarm_max_used);
                        }
-
-                    else if (alarm_min1>1820) // not over 4.2v
-                        {
-                          alarm_min1=5;
-                        } 
-                    else if (alarm_min1<1)  // not behind 0v
-                        {
-                       alarm_min1=420;
-                        }
+                    else if (alarm_max_used>60000)
+                    {
+                       alarm_max_used=3000;  
+                    }
+                    else if (alarm_max_used<0)
+                       {alarm_max_used=0; }
 
                     //LINE 6 SELECTED = text[6]
                     else if (id_key == HOTT_KEY_UP && ligne_select == 6 )
@@ -354,20 +381,20 @@ void GMessage::main_loop(){
                     // Showing page 1
                     
                     //line 0:
-                    snprintf((char *)&hott_txt_msg->text[0],21," LIPO Alarm <");
+                    snprintf((char *)&hott_txt_msg->text[0],21," Alarms <");
                     //line 1:
-                    snprintf((char *)&hott_txt_msg->text[1],21,"Lipo Total: %i.%iv",(int) Lipo_total, ((int) (Lipo_total*100)) % 100);
+                    snprintf((char *)&hott_txt_msg->text[1],21,"Volt: %i.%iv",(int) lipo.getVolt (), ((int) (lipo.getVolt ()*100)) % 100);
                     //line 2:
-                    snprintf((char *)&hott_txt_msg->text[2],21,"Cells : %iS",nb_Lipo);
+                    snprintf((char *)&hott_txt_msg->text[2],21,"Change settings :");
                     //line 3:
-                    snprintf((char *)&hott_txt_msg->text[3],21,"Change settings :");
+                    snprintf((char *)&hott_txt_msg->text[3],21,*alarm_on_off);
                     //line 4:
-                    snprintf((char *)&hott_txt_msg->text[4],21,*alarm_on_off);
-                    //line 5:
-                    if (((int) (alarm_min1 % 100)) == 5 || ((int) (alarm_min1 % 100)) == 0)// Display management to put a 0 after the comma and the X.05v X.00v values ​​because the modulo return 0 or 5 for typical values ​​100,105,200,205,300,305, etc ...
-                    snprintf((char *)&hott_txt_msg->text[5],21," Alarm value : %i.0%iv",(int) (alarm_min1/100),(int) (alarm_min1 % 100)); // adding a 0
+                    if (((int) (alarm_min_volt % 100)) == 5 || ((int) (alarm_min_volt % 100)) == 0)// Display management to put a 0 after the comma and the X.05v X.00v values ​​because the modulo return 0 or 5 for typical values ​​100,105,200,205,300,305, etc ...
+                    snprintf((char *)&hott_txt_msg->text[4],21," Alarm Volt : %i.0%iv",(int) (alarm_min_volt/100),(int) (alarm_min_volt % 100)); // adding a 0
                     else // normal display
-                    snprintf((char *)&hott_txt_msg->text[5],21," Alarm value : %i.%iv",(int) (alarm_min1/100),(int) (alarm_min1 % 100)); // no need of adding 0
+                    snprintf((char *)&hott_txt_msg->text[4],21," Alarm Volt : %i.%iv",(int) (alarm_min_volt/100),(int) (alarm_min_volt % 100)); // no need of adding 0
+                    //line 5:
+                    snprintf((char *)&hott_txt_msg->text[5],21," Used mA: %imA",(alarm_max_used));
                     //line 6:
                     snprintf((char *)&hott_txt_msg->text[6],21," Alarm repeat: %is",(alarm_interval/1000));
                     //line 7:
