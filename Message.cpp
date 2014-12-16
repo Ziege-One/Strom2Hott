@@ -16,8 +16,11 @@
 #define GAM                             // GAM Modul
 
 #include "Message.h"
+#include "Sensor.h"
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
+
+Sensor lipo;
 
  
 SoftwareSerial SERIAL_HOTT(HOTTV4_RXTX , HOTTV4_RXTX); // RX, TX
@@ -202,15 +205,15 @@ void GMessage::main_loop(){
               setLipo (lipo6,2);
               
               // set lipo voltages on Battery 1 and Main voltage
-              setVoltage1(Lipo_total);    // Batt 1
-              setMainVoltage(Lipo_total); // Main
+              setVoltage1(lipo.Lipo_Volt ());    // Batt 1
+              setMainVoltage(lipo.Lipo_Volt ()); // Main
 
                // Searching Minus
                // Search the weakest element
                // to gauge display
                // radio and alarm management
                lipo_mini_bat1 = 0;
-               setVoltage2(lipo_mini_bat1);    // Batt 2
+               setVoltage2(lipo.Lipo_Volt ());    // Batt 2
                 
                time=millis();
                if (time-lastTime>alarm_interval)  // if at least alarm_interval in ms have passed
@@ -228,9 +231,9 @@ void GMessage::main_loop(){
                // View percentage of lipo voltage behind fuel in place of milliliters
                setFuelMilliliters(0);
                // current
-               setCurrent (2.5);
+               setCurrent (lipo.Lipo_Current());
                // batt_cap
-               setBatt_Cap (3.33); 
+               setBatt_Cap (lipo.Lipo_Batt_Cap()); 
                
             // sending all data
             send(sizeof(struct HOTT_GAM_MSG));
@@ -283,7 +286,7 @@ void GMessage::main_loop(){
                     ligne_edit =  ligne_select ;
                     else if (id_key == HOTT_KEY_RIGHT && ligne_edit == -1)
                       {
-                        if (page_settings >=1)// change it if you want more pages
+                        if (page_settings >=2)// change it if you want more pages
                           page_settings = 1;
                         else
                           page_settings+=1;
@@ -351,7 +354,7 @@ void GMessage::main_loop(){
                     // Showing page 1
                     
                     //line 0:
-                    snprintf((char *)&hott_txt_msg->text[0],21," LIPO    <");
+                    snprintf((char *)&hott_txt_msg->text[0],21," LIPO Alarm <");
                     //line 1:
                     snprintf((char *)&hott_txt_msg->text[1],21,"Lipo Total: %i.%iv",(int) Lipo_total, ((int) (Lipo_total*100)) % 100);
                     //line 2:
@@ -374,7 +377,55 @@ void GMessage::main_loop(){
                     _hott_invert_ligne(ligne_edit);
                     break;                    
                     }//END PAGE 1
-                  
+                    
+               case 2: // PAGE 2
+                    {
+                      // config test for the screen display has
+                    if (id_key == HOTT_KEY_LEFT && ligne_edit == -1)
+                        {
+                        if (page_settings <=1)
+                          page_settings = 2;
+                        else
+                          page_settings-=1;
+                        }
+                     else if (id_key == HOTT_KEY_RIGHT && ligne_edit == -1)
+                      {
+                        if (page_settings >=2)// change it if you want more pages
+                          page_settings = 1;
+                        else
+                          page_settings+=1;
+                      }
+                                                      
+                    else if (id_key == HOTT_KEY_UP && ligne_edit == -1)
+                    ligne_select = min(6,ligne_select+1); // never gets above line 6 max
+                    else if (id_key == HOTT_KEY_DOWN && ligne_edit == -1)
+                    ligne_select = max(4,ligne_select-1); // never gets above line 4 min
+                    else if (id_key == HOTT_KEY_SET && ligne_edit == -1)
+                    //ligne_edit =  ligne_select ;
+                    
+                    // Showing page 2 settings
+                    //line 0:                                  
+                    snprintf((char *)&hott_txt_msg->text[0],21," LIPO CAL   >");
+                    //line 1:
+                    snprintf((char *)&hott_txt_msg->text[1],21,"Current: %im",(float) lipo.Lipo_Current());
+                    //line 2:
+                    snprintf((char *)&hott_txt_msg->text[2],21,"Current: %im",(float) lipo.Lipo_Current());
+                    //line 3:
+                    snprintf((char *)&hott_txt_msg->text[3],21,"Current: %im",(float) lipo.Lipo_Current());
+                    //line 4:
+                    snprintf((char *)&hott_txt_msg->text[4],21,"Current: %im",(float) lipo.Lipo_Current()); 
+                    //line 5:
+                    snprintf((char *)&hott_txt_msg->text[5],21,"Current: %im",(float) lipo.Lipo_Current());
+                    //line 6:
+                    snprintf((char *)&hott_txt_msg->text[6],21,"Current: %im",(float) lipo.Lipo_Current());
+                    //line 7:
+                    snprintf((char *)&hott_txt_msg->text[7],21,"Strom2HoTT  %d/1",page_settings); //Showing page number running down the screen to the right
+                    
+                    //hott_txt_msg->text[ligne_select][0] = '>';
+                    //_hott_invert_ligne(ligne_edit);
+                    break;
+                    }//END PAGE 2
+                    
                   default://PAGE 
                   {
                     break;
@@ -498,7 +549,7 @@ void GMessage::setCurrent(float a){
 }
 // Set batt_cap 1 = 10mAh
 void GMessage::setBatt_Cap(float ma){
-  hott_gam_msg->batt_cap = (uint16_t) (ma * 100); 
+  hott_gam_msg->batt_cap = (uint16_t) (ma / 10); 
 }
 
 
