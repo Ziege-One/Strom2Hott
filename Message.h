@@ -208,6 +208,11 @@ public:
   int pwm_size(void);
   void debug();
   
+  int getVoltOffset();
+  int getVoltCOEF();
+  int getCurrentOffset();
+  int getCurrentCOEF();
+  
 };
 
 
