@@ -265,7 +265,7 @@ void GMessage::main_loop(){
         memset((char *)&hott_txt_msg->text, 0x20, HOTT_TEXTMODE_MSG_TEXT_LEN);
         hott_txt_msg->stop_byte = 0x7d;
 
-        if (id_key == HOTT_KEY_LEFT && page_settings == 1)
+        if (id_key == HOTT_KEY_LEFT && page_settings == 4)
         {   
           hott_txt_msg->esc = 0x01;
         }
@@ -290,16 +290,20 @@ void GMessage::main_loop(){
                     ligne_select = max(3,ligne_select-1); // never gets above line 3 min
                     else if (id_key == HOTT_KEY_SET && ligne_edit == -1)
                     ligne_edit =  ligne_select ;
+                    
+                    else if (id_key == HOTT_KEY_LEFT && ligne_edit == -1)
+                        {
+                        page_settings-=1;
+                        if (page_settings <1)    // unter Seite 1 dann Seite 2
+                          page_settings = 2;
+                        }
                     else if (id_key == HOTT_KEY_RIGHT && ligne_edit == -1)
                       {
-                        if (page_settings >=2)// change it if you want more pages
+                        page_settings+=1;
+                        if (page_settings >2)   // Über Seite 2 dann Seite 1
                           page_settings = 1;
-                        else
-                          page_settings+=1;
                       }
-                      
-                      
-                      
+
                     //LINE 3 SELECTED = text[3]
                     else if (id_key == HOTT_KEY_UP && ligne_select == 3 )
                       {
@@ -325,6 +329,10 @@ void GMessage::main_loop(){
                       alarm_min_volt+=5;
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 4 )
                       alarm_min_volt-=5;
+                    else if (id_key == HOTT_KEY_RIGHT && ligne_select == 4 )
+                      alarm_min_volt+=50;
+                    else if (id_key == HOTT_KEY_LEFT && ligne_select == 4 )
+                      alarm_min_volt-=50;                      
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 4)
                       {
                        ligne_edit = -1 ;
@@ -406,17 +414,15 @@ void GMessage::main_loop(){
                       // config test for the screen display has
                     if (id_key == HOTT_KEY_LEFT && ligne_edit == -1)
                         {
-                        if (page_settings <=1)
+                        page_settings-=1;
+                        if (page_settings <1)    // unter Seite 1 dann Seite 2
                           page_settings = 2;
-                        else
-                          page_settings-=1;
                         }
-                     else if (id_key == HOTT_KEY_RIGHT && ligne_edit == -1)
+                    else if (id_key == HOTT_KEY_RIGHT && ligne_edit == -1)
                       {
-                        if (page_settings >=2)// change it if you want more pages
+                        page_settings+=1;
+                        if (page_settings >2)   // Über Seite 2 dann Seite 1
                           page_settings = 1;
-                        else
-                          page_settings+=1;
                       }
                                                       
                     else if (id_key == HOTT_KEY_UP && ligne_edit == -1)
@@ -431,6 +437,10 @@ void GMessage::main_loop(){
                       Volt_Offset+=1;
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 3 )
                       Volt_Offset-=1;
+                    else if (id_key == HOTT_KEY_RIGHT && ligne_select == 3 )
+                      Volt_Offset+=10;
+                    else if (id_key == HOTT_KEY_LEFT && ligne_select == 3 )
+                      Volt_Offset-=10;                      
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 3)
                       {
                        ligne_edit = -1 ;
@@ -451,6 +461,10 @@ void GMessage::main_loop(){
                       Volt_COEF+=1;
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 4 )
                       Volt_COEF-=1;
+                    else if (id_key == HOTT_KEY_RIGHT && ligne_select == 4 )
+                      Volt_COEF+=10;
+                    else if (id_key == HOTT_KEY_LEFT && ligne_select == 4 )
+                      Volt_COEF-=10;                         
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 4)
                       {
                        ligne_edit = -1 ;
@@ -471,6 +485,10 @@ void GMessage::main_loop(){
                       Current_Offset+=1;
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 5 )
                       Current_Offset-=1;
+                    else if (id_key == HOTT_KEY_RIGHT && ligne_select == 5 )
+                      Current_Offset+=10;
+                    else if (id_key == HOTT_KEY_LEFT && ligne_select == 5 )
+                      Current_Offset-=10;                         
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 5)
                       {
                        ligne_edit = -1 ;
@@ -491,6 +509,10 @@ void GMessage::main_loop(){
                       Current_COEF+=1;
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 6 )
                       Current_COEF-=1;
+                    else if (id_key == HOTT_KEY_RIGHT && ligne_select == 6 )
+                      Current_COEF+=10;
+                    else if (id_key == HOTT_KEY_LEFT && ligne_select == 6 )
+                      Current_COEF-=10;                        
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 6)
                       {
                        ligne_edit = -1 ;
