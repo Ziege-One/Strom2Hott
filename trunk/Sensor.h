@@ -1,4 +1,7 @@
 /*
+   Strom2HoTT
+   Ziege-One
+   v1.0
  
  Arduino pro Mini 5v/16mHz w/ Atmega 328
  
@@ -8,32 +11,31 @@
 
 /*  
 //AMP Sensor
-#define COEF_Volt 0.05104656              
-#define COEF_Current 0.091551155        
-#define OffsetVolt 0
-#define OffsetCurrent 0                 
+#define COEF_Volt 510     // /10mV pro Digi          
+#define COEF_Current 915  // /10mA pro Digi      
+#define OffsetVolt 0      // Digi Offset
+#define OffsetCurrent 0   // Digi Offset              
 */
 //ACS758 LCB 100U Default for Eprom
-#define COEF_Volt 181               
-#define COEF_Current 1262   
-#define OffsetVolt 0
-#define OffsetCurrent 129 
+#define COEF_Volt 181     // /10mV pro Digi          
+#define COEF_Current 1262 // /10mA pro Digi  
+#define OffsetVolt 0      // Digi Offset
+#define OffsetCurrent 129 // Digi Offset
 
 class Sensor{
 public:
   void ReadSensor(); 
   
-  float getVolt();    //in V
-  int   getVoltDigi();//in Digi
-  float getCurrent(); //in mA
+  float getVolt();        //in V
+  int   getVoltDigi();    //in Digi
+  float getCurrent();     //in A
   int   getCurrentDigi(); //in Digi
-  float getBattCap(); //im mA
+  float getBattCap();     //im mA
   
-  float getVCC();
-  float getTemp();
+  float getVCC();         // Interne Temperatur
+  float getTemp();        // Interne Spannung
   
   private:
-  uint16_t mesure(uint8_t pin);
-  float ReadTemp();
-  float ReadVCC();
+  float ReadTemp();       // Interne Temperatur lesen
+  float ReadVCC();        // Interne Spannung lesen
 };
