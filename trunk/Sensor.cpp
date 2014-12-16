@@ -5,6 +5,9 @@
  */
  
 #include "Sensor.h"
+#include "Message.h"
+
+GMessage message2;
 
 //Time values for Used Capacity calculation 
 unsigned long current_time = 0;
@@ -16,7 +19,9 @@ float secound_scale = 1000.0f / 3600.0f;
 
 //Internal Values
 float Volt = 0.0f;
+  int VoltDigi = 0; 
 float Current = 0.0f;
+  int CurrentDigi = 0;
 float Capacity_Used = 0.0f;
 
 float VCC = 0.0f;
@@ -24,7 +29,9 @@ float Temp = 0.0f;
 
 
 float Sensor::getVolt() { return Volt; }
+int   Sensor::getVoltDigi() {return VoltDigi; }
 float Sensor::getCurrent() { return Current; }
+int   Sensor::getCurrentDigi() {return CurrentDigi; }
 float Sensor::getBattCap() { return Capacity_Used; }
 
 float Sensor::getVCC() { return VCC; }
@@ -43,7 +50,8 @@ void Sensor::ReadSensor(){
   static float MV9_Volt = 0.0;
   float MV10_Volt;
 
-  MV10_Volt =  ((analogRead(A0)) - OffsetVolt)* COEF_Volt;
+  VoltDigi = analogRead(A0);
+  MV10_Volt =  (VoltDigi - (message2.getVoltOffset()))* ((message2.getVoltCOEF()) * 0.0001);;
   Volt = (MV1_Volt + MV2_Volt + MV3_Volt + MV4_Volt + MV5_Volt + MV6_Volt + MV7_Volt + MV8_Volt + MV9_Volt + MV10_Volt) / 10; // filter (average of 10 samples)
   MV1_Volt = MV2_Volt; // shift
   MV2_Volt = MV3_Volt;
@@ -65,9 +73,10 @@ void Sensor::ReadSensor(){
   static float MV7_Current = 0.0;
   static float MV8_Current = 0.0;
   static float MV9_Current = 0.0;
-  float MV10_Current;
+  float MV10_Current; 
 
-  MV10_Current =  ((analogRead(A1)) - OffsetCurrent)* COEF_Current;
+  CurrentDigi = analogRead(A1);
+  MV10_Current =  (CurrentDigi - (message2.getCurrentOffset()))* ((message2.getCurrentCOEF()) * 0.0001);
   Current = (MV1_Current + MV2_Current + MV3_Current + MV4_Current + MV5_Current + MV6_Current + MV7_Current + MV8_Current + MV9_Current + MV10_Current) / 10; // filter (average of 10 samples)
   MV1_Current = MV2_Current; // shift
   MV2_Current = MV3_Current;
