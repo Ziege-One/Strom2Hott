@@ -50,7 +50,7 @@ struct HOTT_TEXTMODE_MSG	*hott_txt_msg =	(struct HOTT_TEXTMODE_MSG *)&_hott_seri
 int alarm_on_off_batt1 = 1; // 0=FALSE/Disable 1=TRUE/Enable   // Enable alarm by default for safety
 char* alarm_on_off[13];      // For Radio OSD
 char* model_config[15];      // For Radio OSD
-static uint16_t alarm_min1 = 360; // Min volt for alarm in mV
+static uint16_t alarm_min1 = 1350; // Min volt for alarm in mV
 // Timer for alarm
 // for refresh time
 int alarm_interval = 15000; // in ms
@@ -157,7 +157,7 @@ void GMessage::main_loop(){
   // STARTING MAIN PROGRAM
   static byte page_settings = 1; // page number to display settings
   
-
+  lipo.ReadSensor();
 
   if(SERIAL_HOTT.available() >= 2) {
     uint8_t octet1 = SERIAL_HOTT.read();
@@ -179,7 +179,7 @@ void GMessage::main_loop(){
             
             // Set values to 0 for clean screen
                setTemp (0,2);                       // not use
-               setTemp (0,1);                       // not use
+               setTemp (lipo.getTemp(),1);                       // not use
                setClimbrate_M3(120);                // not use
                setVoltage2(0);                      // not use
               
@@ -205,15 +205,15 @@ void GMessage::main_loop(){
               setLipo (lipo6,2);
               
               // set lipo voltages on Battery 1 and Main voltage
-              setVoltage1(lipo.Lipo_Volt ());    // Batt 1
-              setMainVoltage(lipo.Lipo_Volt ()); // Main
+              setVoltage1(lipo.getVolt ());    // Batt 1
+              setMainVoltage(lipo.getVolt ()); // Main
 
                // Searching Minus
                // Search the weakest element
                // to gauge display
                // radio and alarm management
                lipo_mini_bat1 = 0;
-               setVoltage2(lipo.Lipo_Volt ());    // Batt 2
+               setVoltage2(lipo.getVCC ());    // Batt 2
                 
                time=millis();
                if (time-lastTime>alarm_interval)  // if at least alarm_interval in ms have passed
@@ -231,9 +231,9 @@ void GMessage::main_loop(){
                // View percentage of lipo voltage behind fuel in place of milliliters
                setFuelMilliliters(0);
                // current
-               setCurrent (lipo.Lipo_Current());
+               setCurrent (lipo.getCurrent());
                // batt_cap
-               setBatt_Cap (lipo.Lipo_Batt_Cap()); 
+               setBatt_Cap (lipo.getBattCap()); 
                
             // sending all data
             send(sizeof(struct HOTT_GAM_MSG));
@@ -325,7 +325,7 @@ void GMessage::main_loop(){
                        write_eprom(adr_eprom_alarm_min1,alarm_min1);
                        }
 
-                    else if (alarm_min1>420) // not over 4.2v
+                    else if (alarm_min1>1820) // not over 4.2v
                         {
                           alarm_min1=5;
                         } 
@@ -407,17 +407,17 @@ void GMessage::main_loop(){
                     //line 0:                                  
                     snprintf((char *)&hott_txt_msg->text[0],21," LIPO CAL   >");
                     //line 1:
-                    snprintf((char *)&hott_txt_msg->text[1],21,"Current: %im",(float) lipo.Lipo_Current());
+                    snprintf((char *)&hott_txt_msg->text[1],21,"Current: %i.%iA",(int) lipo.getCurrent(), ((int) (lipo.getCurrent()*100)) % 100);
                     //line 2:
-                    snprintf((char *)&hott_txt_msg->text[2],21,"Current: %im",(float) lipo.Lipo_Current());
+                    snprintf((char *)&hott_txt_msg->text[2],21,"Current: %fA",(float) lipo.getCurrent());
                     //line 3:
-                    snprintf((char *)&hott_txt_msg->text[3],21,"Current: %im",(float) lipo.Lipo_Current());
+                    snprintf((char *)&hott_txt_msg->text[3],21,"Current: %fA",(float) lipo.getCurrent());
                     //line 4:
-                    snprintf((char *)&hott_txt_msg->text[4],21,"Current: %im",(float) lipo.Lipo_Current()); 
+                    snprintf((char *)&hott_txt_msg->text[4],21,"Current: %fA",(float) lipo.getCurrent()); 
                     //line 5:
-                    snprintf((char *)&hott_txt_msg->text[5],21,"Current: %im",(float) lipo.Lipo_Current());
+                    snprintf((char *)&hott_txt_msg->text[5],21,"Current: %fA",(float) lipo.getCurrent());
                     //line 6:
-                    snprintf((char *)&hott_txt_msg->text[6],21,"Current: %im",(float) lipo.Lipo_Current());
+                    snprintf((char *)&hott_txt_msg->text[6],21,"Current: %fA",(float) lipo.getCurrent());
                     //line 7:
                     snprintf((char *)&hott_txt_msg->text[7],21,"Strom2HoTT  %d/1",page_settings); //Showing page number running down the screen to the right
                     
@@ -607,7 +607,10 @@ uint32_t GMessage::seconds() {
 void GMessage::debug(){
    // FOR DEBUG
     Serial.println("------------------------");
-    Serial.print("Alt:"); Serial.println(0);
-
-
+    Serial.print("Volt:"); Serial.print(lipo.getVolt(), 1);Serial.print("V = digit:");Serial.println(lipo.getVolt()/COEF_Volt);
+    Serial.print("Current:"); Serial.print(lipo.getCurrent(), 1);Serial.print("A = digit:");Serial.println(lipo.getCurrent()/COEF_Current);
+    Serial.print("BattCap:"); Serial.print(lipo.getBattCap(), 0);Serial.println("mA");
+    Serial.print("VCC:"); Serial.print(lipo.getVCC(), 2);Serial.println("V");
+    Serial.print("Temp:"); Serial.print(lipo.getTemp(), 2);Serial.println("*C");
+   
 }
