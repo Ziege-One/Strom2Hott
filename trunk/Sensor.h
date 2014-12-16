@@ -6,8 +6,18 @@
  
 #include "Arduino.h"
 
-#define COEF_Volt 0.05104656
-#define COEF_Current 0.091551155
+/*  
+//AMP Sensor
+#define COEF_Volt 0.05104656              
+#define COEF_Current 0.091551155        
+#define OffsetVolt 0
+#define OffsetCurrent 0                 
+*/
+//ACS758 LCB 100U 
+#define COEF_Volt 0.05104656              
+#define COEF_Current     0.126213592233   
+#define OffsetVolt 0
+#define OffsetCurrent 126 
 
 class Sensor{
 public:
