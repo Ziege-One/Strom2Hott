@@ -185,7 +185,6 @@ void GMessage::main_loop(){
         // Demande RX Module =	$80 $XX
         switch (octet2) {
         
-        #ifdef GAM
         case HOTT_TELEMETRY_GAM_SENSOR_ID: //0x8D
           {    
                LEDPIN_ON
@@ -246,7 +245,7 @@ void GMessage::main_loop(){
             send(sizeof(struct HOTT_GAM_MSG));
             break;
           } //end case GAM*/
-          #endif
+     
         } //end case octet 2
         break;
       }
