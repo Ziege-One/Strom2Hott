@@ -58,7 +58,7 @@ V4 incorporating the latest Lipomètre of Thyzoon v0.531 (October 2013) with low
 #define LEDPIN_OFF        PORTB &= ~(1<<5);
 #define LEDPIN_ON         PORTB |= (1<<5);
 
-//#define Debug                             // on off debuging
+#define Debug                             // on off debuging
 
 // Time interval [ms] for display updates:
 const unsigned long DISPLAY_INTERVAL = 5000;
