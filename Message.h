@@ -1,6 +1,6 @@
 /*
-   LIPOMETER v1.0
-   http://johnlenfr.1s.fr
+   Strom2HoTT
+   Ziege-One
    v1.0
  
  Arduino pro Mini 5v/16mHz w/ Atmega 328
@@ -208,6 +208,7 @@ public:
   int pwm_size(void);
   void debug();
   
+  // Messbereiche im Eprom
   int getVoltOffset();
   int getVoltCOEF();
   int getCurrentOffset();

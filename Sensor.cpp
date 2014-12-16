@@ -1,4 +1,7 @@
 /*
+   Strom2HoTT
+   Ziege-One
+   v1.0
  
  Arduino pro Mini 5v/16mHz w/ Atmega 328
  
@@ -7,6 +10,7 @@
 #include "Sensor.h"
 #include "Message.h"
 
+// Einfügen Message.cpp Funktionen
 GMessage message2;
 
 //Time values for Used Capacity calculation 
@@ -38,7 +42,7 @@ float Sensor::getVCC() { return VCC; }
 float Sensor::getTemp() { return Temp; }
 
 void Sensor::ReadSensor(){
-  // Volt
+  // Spannung
   static float MV1_Volt = 0.0;
   static float MV2_Volt = 0.0;
   static float MV3_Volt = 0.0;
@@ -63,7 +67,7 @@ void Sensor::ReadSensor(){
   MV8_Volt = MV9_Volt;
   MV9_Volt = MV10_Volt;
   
-  // Current
+  // Strom
   static float MV1_Current = 0.0;
   static float MV2_Current = 0.0;
   static float MV3_Current = 0.0;
@@ -87,10 +91,8 @@ void Sensor::ReadSensor(){
   MV7_Current = MV8_Current;
   MV8_Current = MV9_Current;
   MV9_Current = MV10_Current;
-  
-  //Volt = 12.5;
-  //Current = 10.0;
 
+  // Kapazität
   current_time = millis();
   //Calculate the used Capacity in [mAh]
   //Calculate elapsed Time in sec first
@@ -105,7 +107,7 @@ void Sensor::ReadSensor(){
 
 
 
-float Sensor::ReadVCC() {  //The voltage is returned in millivolts. So 5000 is 5V, 3300 is 3.3V.
+float Sensor::ReadVCC() {  //Die Spannung wird in Volt zurückgegeben.
   long result;
   float result2;
   // Read 1.1V reference against AVcc
@@ -120,7 +122,7 @@ float Sensor::ReadVCC() {  //The voltage is returned in millivolts. So 5000 is 5
   return result2/1000;
 }
 
-float Sensor::ReadTemp() { // Temperature is returned in milli-°C. So 25000 is 25°C. 
+float Sensor::ReadTemp() { // Temperatur wird in ° C zurückgegeben.  
   unsigned int wADC;
   double t;
   // Set the internal reference and mux.

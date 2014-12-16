@@ -1,25 +1,22 @@
 /*
-   LIPOMETER v1.0
-   http://johnlenfr.1s.fr
+   Strom2HoTT
+   Ziege-One
    v1.0
  
  Arduino pro Mini 5v/16mHz w/ Atmega 328
  
  */
 
-#define HOTTV4_RXTX 3           // Pin for HoTT telemetrie output
+#define HOTTV4_RXTX 3           // Pin für HoTT Telemetrie Ausgang
 #define LEDPIN_OFF              PORTB &= ~(1<<5);
 #define LEDPIN_ON               PORTB |= (1<<5);
-
-// Module define
-#define GPS                             // GPS Modul
-#define GAM                             // GAM Modul
 
 #include "Message.h"
 #include "Sensor.h"
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
 
+// Einfügen Sensor.cpp Funktionen
 Sensor lipo;
 
  
@@ -49,41 +46,30 @@ struct HOTT_TEXTMODE_MSG	*hott_txt_msg =	(struct HOTT_TEXTMODE_MSG *)&_hott_seri
 // Alarm
 int alarm_on_off_batt1 = 1; // 0=FALSE/Disable 1=TRUE/Enable   // Enable alarm by default for safety
 char* alarm_on_off[13];      // For Radio OSD
-char* model_config[15];      // For Radio OSD
+
 static uint16_t alarm_min_volt = 900; // Min volt for alarm in mV
 static uint16_t alarm_max_used = 1800; // Max Current Use for alarm in mA
+
 // Timer for alarm
 // for refresh time
 int alarm_interval = 15000; // in ms
 static unsigned long lastTime=0;  // in ms
 unsigned long time=millis();      // in ms
+
 // Messbereiche im Eprom
 int Volt_Offset;
 int Volt_COEF;
 int Current_Offset;
 int Current_COEF;
 
-int   GMessage::getVoltOffset() {return Volt_Offset; }
-int   GMessage::getVoltCOEF() {return Volt_COEF; }
-int   GMessage::getCurrentOffset() {return Current_Offset; }
-int   GMessage::getCurrentCOEF() {return Current_COEF; }
+int GMessage::getVoltOffset() {return Volt_Offset; }
+int GMessage::getVoltCOEF() {return Volt_COEF; }
+int GMessage::getCurrentOffset() {return Current_Offset; }
+int GMessage::getCurrentCOEF() {return Current_COEF; }
 
 // For communication
 static uint8_t octet1 = 0;  // reception
 static uint8_t octet2 = 0;  // reception
-
-// For Lipo
-static uint8_t nb_Lipo = 4; // Number of items Lipo battery default before detection
-float  Lipo_total = 0;      // Total voltage measured
-float  lipo1 = 0.0;         // Voltage on each element
-float  lipo2 = 0.0;
-float  lipo3 = 0.0;
-float  lipo4 = 0.0; 
-float  lipo5 = 0.0; 
-float  lipo6 = 0.0; 
-float  lipo_mini_bat1 = 0.0; // Minimum voltage value element
-uint8_t Jauge = 0;           // fuel gauge
-
 
 // For saving settings in EEPROM
 /*
@@ -135,7 +121,7 @@ void GMessage::init(){
     alarm_interval = read_eprom(adr_eprom_alarm_interval); // default is 15000 ms if not change
     // Enable / Disable alarm bip
     alarm_on_off_batt1 = read_eprom(adr_eprom_alarm_on_off_batt1); // 0=FALSE/Disable 1=TRUE/Enable
-
+    // Messbereiche im Eprom
     Volt_Offset = read_eprom(adr_eprom_volt_offset);
     Volt_COEF = read_eprom(adr_eprom_volt_coef);
     Current_Offset = read_eprom(adr_eprom_current_offset);
@@ -181,12 +167,13 @@ void GMessage::send(int lenght){
   hottV4EnableReceiverMode();
 }
 
+
 void GMessage::main_loop(){ 
   
   // STARTING MAIN PROGRAM
   static byte page_settings = 1; // page number to display settings
   
-  lipo.ReadSensor();
+  lipo.ReadSensor(); //Spannung und Strom Werte einlesen
 
   if(SERIAL_HOTT.available() >= 2) {
     uint8_t octet1 = SERIAL_HOTT.read();
@@ -207,43 +194,30 @@ void GMessage::main_loop(){
                init_gam_msg();
             
             // Set values to 0 for clean screen
-               setTemp (0,2);                       // not use
-               setTemp (lipo.getTemp(),1);                       // not use
-               setClimbrate_M3(120);                // not use
-               setVoltage2(0);                      // not use
+               setTemp (0,2);                       // nicht verwenden
+               setTemp (lipo.getTemp(),1);          // Interne Temperatur Arduino Mini Pro
+               setClimbrate_M3(120);                // nicht verwenden
+               setVoltage2(0);                      // nicht verwenden
               
             // Use values of the GPS
-               setAltitudeInMeters (500);     // use gps infos
-               setClimbrate(30000); // use gps infos
-               setSpeed(0);                 // use gps infos
+               setAltitudeInMeters (500);           // nicht verwenden
+               setClimbrate(30000);                 // nicht verwenden
+               setSpeed(0);                         // nicht verwenden
 
-            // Voltage Measurement
-             lipo1 = 0;
-             lipo2 = 0;
-             lipo3 = 0;
-             lipo4 = 0;
-             lipo5 = 0;
-             lipo6 = 0;
-
-              // Set Lipo       
-              setLipo (lipo1,1);
-              setLipo (lipo2,2);
-              setLipo (lipo3,2);
-              setLipo (lipo4,2);
-              setLipo (lipo5,2);
-              setLipo (lipo6,2);
+            // Set Lipo       
+              setLipo (0,1);                        // nicht verwenden
+              setLipo (0,2);                        // nicht verwenden
+              setLipo (0,2);                        // nicht verwenden
+              setLipo (0,2);                        // nicht verwenden
+              setLipo (0,2);                        // nicht verwenden
+              setLipo (0,2);                        // nicht verwenden
               
-              // set lipo voltages on Battery 1 and Main voltage
-              setVoltage1(lipo.getVolt ());    // Batt 1
-              setMainVoltage(lipo.getVolt ()); // Main
-
-               // Searching Minus
-               // Search the weakest element
-               // to gauge display
-               // radio and alarm management
-               lipo_mini_bat1 = 0;
-               setVoltage2(lipo.getVCC ());    // Batt 2
-                
+            // set lipo voltages on Battery 1 and Main voltage
+              setVoltage1(lipo.getVolt ());    // Batt 1 -> Spannung Lipo
+              setVoltage2(lipo.getVCC ());     // Batt 2 -> Spannung Arduino            
+              setMainVoltage(lipo.getVolt ()); // Main   -> Spannung Lipo
+              
+            // Alarmmanagement
                time=millis();
                if (time-lastTime>alarm_interval)  // if at least alarm_interval in ms have passed
                {
@@ -260,13 +234,13 @@ void GMessage::main_loop(){
                }
             
                // Fuel gauge display
-               setFuelPercent (0);
-               // View percentage of lipo voltage behind fuel in place of milliliters
-               setFuelMilliliters(0);
+               setFuelPercent (0);    // nicht verwenden
+               // View percentage 
+               setFuelMilliliters(0); // nicht verwenden
                // current
-               setCurrent (lipo.getCurrent());
+               setCurrent (lipo.getCurrent()); //Strom
                // batt_cap
-               setBatt_Cap (lipo.getBattCap()); 
+               setBatt_Cap (lipo.getBattCap()); //Kapazität
                
             // sending all data
             send(sizeof(struct HOTT_GAM_MSG));
@@ -404,7 +378,7 @@ void GMessage::main_loop(){
                     // Showing page 1
                     
                     //line 0:
-                    snprintf((char *)&hott_txt_msg->text[0],21," Alarms <");
+                    snprintf((char *)&hott_txt_msg->text[0],21," Alarms >");
                     //line 1:
                     snprintf((char *)&hott_txt_msg->text[1],21,"Volt: %i.%iv",(int) lipo.getVolt (), ((int) (lipo.getVolt ()*100)) % 100);
                     //line 2:
@@ -535,7 +509,7 @@ void GMessage::main_loop(){
                     
                     // Showing page 2 settings
                     //line 0:                                  
-                    snprintf((char *)&hott_txt_msg->text[0],21," LIPO CAL   >");
+                    snprintf((char *)&hott_txt_msg->text[0],21," LIPO CAL   <");
                     //line 1:
                     snprintf((char *)&hott_txt_msg->text[1],21,"Volt: %i.%iv",(int) lipo.getVolt (), ((int) (lipo.getVolt ()*100)) % 100);
                     //line 2:
@@ -737,7 +711,7 @@ uint32_t GMessage::seconds() {
 
 void GMessage::debug(){
    // FOR DEBUG
-    Serial.println("------------------------");
+    Serial.println("-----------Strom2HoTT-V1.0------------");
     Serial.print("Volt:"); Serial.print(lipo.getVolt(), 2);Serial.print("V = digit:");Serial.println(lipo.getVoltDigi());
     Serial.print("Current:"); Serial.print(lipo.getCurrent(), 2);Serial.print("A = digit:");Serial.println(lipo.getCurrentDigi());
     Serial.print("BattCap:"); Serial.print(lipo.getBattCap(), 0);Serial.println("mA");
