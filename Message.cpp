@@ -368,7 +368,7 @@ void GMessage::main_loop(){
                     //line 6:
                     snprintf((char *)&hott_txt_msg->text[6],21," Alarm repeat: %is",(alarm_interval/1000));
                     //line 7:
-                    snprintf((char *)&hott_txt_msg->text[7],21,"Naza2HoTT  %d/1",page_settings); //Showing page number running down the screen to the right
+                    snprintf((char *)&hott_txt_msg->text[7],21,"Strom2HoTT  %d/1",page_settings); //Showing page number running down the screen to the right
                     
                     hott_txt_msg->text[ligne_select][0] = '>';
                     _hott_invert_ligne(ligne_edit);
