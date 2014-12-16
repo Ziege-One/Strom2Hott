@@ -43,7 +43,7 @@ void Sensor::ReadSensor(){
   static float MV9_Volt = 0.0;
   float MV10_Volt;
 
-  MV10_Volt =  analogRead(A0)* COEF_Volt;
+  MV10_Volt =  ((analogRead(A0)) - OffsetVolt)* COEF_Volt;
   Volt = (MV1_Volt + MV2_Volt + MV3_Volt + MV4_Volt + MV5_Volt + MV6_Volt + MV7_Volt + MV8_Volt + MV9_Volt + MV10_Volt) / 10; // filter (average of 10 samples)
   MV1_Volt = MV2_Volt; // shift
   MV2_Volt = MV3_Volt;
@@ -67,7 +67,7 @@ void Sensor::ReadSensor(){
   static float MV9_Current = 0.0;
   float MV10_Current;
 
-  MV10_Current =  analogRead(A1)* COEF_Current;
+  MV10_Current =  ((analogRead(A1)) - OffsetCurrent)* COEF_Current;
   Current = (MV1_Current + MV2_Current + MV3_Current + MV4_Current + MV5_Current + MV6_Current + MV7_Current + MV8_Current + MV9_Current + MV10_Current) / 10; // filter (average of 10 samples)
   MV1_Current = MV2_Current; // shift
   MV2_Current = MV3_Current;
