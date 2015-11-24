@@ -23,8 +23,10 @@ float secound_scale = 1000.0f / 3600.0f;
 
 //Internal Values
 float Volt = 0.0f;
+float Volt_min = 50.0f;
   int VoltDigi = 0; 
 float Current = 0.0f;
+float Current_max = 0.0f;
   int CurrentDigi = 0;
 float Capacity_Used = 0.0f;
 
@@ -33,8 +35,10 @@ float Temp = 0.0f;
 
 
 float Sensor::getVolt() { return Volt; }
+float Sensor::getVolt_min() { return Volt_min; }
 int   Sensor::getVoltDigi() {return VoltDigi; }
 float Sensor::getCurrent() { return Current; }
+float Sensor::getCurrent_max() { return Current_max; }
 int   Sensor::getCurrentDigi() {return CurrentDigi; }
 float Sensor::getBattCap() { return Capacity_Used; }
 
@@ -100,6 +104,13 @@ void Sensor::ReadSensor(){
   //Now the used capacity
   Capacity_Used += Current * secound_scale * time_elapsed;
   last_time = current_time;
+  
+  // Min/Max
+  if (current_time > 5000)
+  {
+    if (Volt < Volt_min) Volt_min = Volt;
+    if (Current > Current_max) Current_max = Current;
+  }
   
   VCC = ReadVCC();
   Temp = ReadTemp(); 

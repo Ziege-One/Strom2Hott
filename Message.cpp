@@ -43,6 +43,9 @@ static uint8_t _hott_serial_buffer[173];   //creating a buffer variable to store
 struct HOTT_GAM_MSG     *hott_gam_msg = (struct HOTT_GAM_MSG *)&_hott_serial_buffer[0];
 struct HOTT_TEXTMODE_MSG	*hott_txt_msg =	(struct HOTT_TEXTMODE_MSG *)&_hott_serial_buffer[0];
 
+struct HOTT_ESC_MSG     *hott_esc_msg = (struct HOTT_ESC_MSG *)&_hott_serial_buffer[0];
+
+
 // Alarm
 int alarm_on_off_batt1 = 1; // 0=FALSE/Disable 1=TRUE/Enable   // Enable alarm by default for safety
 char* alarm_on_off[13];      // For Radio OSD
@@ -148,6 +151,14 @@ void GMessage::init_gam_msg(){
   hott_gam_msg->sensor_id = 0xd0;
   hott_gam_msg->stop_byte = 0x7d;
 }
+void GMessage::init_esc_msg(){
+  //puts to all Zero, then modifies the constants
+  memset(hott_esc_msg, 0, sizeof(struct HOTT_ESC_MSG));   
+  hott_esc_msg->start_byte = 0x7c;
+  hott_esc_msg->esc_sensor_id = 0x8c;
+  hott_esc_msg->sensor_id = 0xc0;
+  hott_esc_msg->stop_byte = 0x7d;
+}
 
 
 // Sending the frame
@@ -191,6 +202,7 @@ void GMessage::main_loop(){
            
             // init structure
                init_gam_msg();
+          
             
             // Set values to 0 for clean screen
                setTemp (0,2);                       // nicht verwenden
@@ -243,6 +255,41 @@ void GMessage::main_loop(){
                
             // sending all data
             send(sizeof(struct HOTT_GAM_MSG));
+            break;
+          } //end case GAM*/
+ 
+         case HOTT_TELEMETRY_ESC_SENSOR_ID: //0x8D
+          {    
+               LEDPIN_ON
+           
+            // init structure
+               init_esc_msg();
+         
+               hott_esc_msg->voltage = (lipo.getVolt ()) * 10 ;               
+				        
+               hott_esc_msg->voltage_min = (lipo.getVolt_min ()) * 10 ;                
+					
+               hott_esc_msg->current = (lipo.getCurrent()) * 10 ;        
+					
+               hott_esc_msg->current_max = (lipo.getCurrent_max()) * 10 ;        
+				        
+               hott_esc_msg->temp1 = (lipo.getTemp()) + 20;                   
+				        
+               hott_esc_msg->temp1_max = 20;                    
+				        
+               hott_esc_msg->RPM = 0;   
+               
+               hott_esc_msg->RPM_max= 0;               
+				        
+               hott_esc_msg->batt_cap = (lipo.getBattCap()) / 10;            	
+					
+               hott_esc_msg->temp2 = 20;                   
+				        
+               hott_esc_msg->temp2_max = 20;      
+               
+               
+            // sending all data
+            send(sizeof(struct HOTT_ESC_MSG));
             break;
           } //end case GAM*/
      

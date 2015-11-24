@@ -27,8 +27,10 @@ public:
   void ReadSensor(); 
   
   float getVolt();        //in V
+  float getVolt_min();    //in V
   int   getVoltDigi();    //in Digi
   float getCurrent();     //in A
+  float getCurrent_max(); //in A
   int   getCurrentDigi(); //in Digi
   float getBattCap();     //im mA
   

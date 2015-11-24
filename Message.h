@@ -10,6 +10,10 @@
 
 #include "Arduino.h"
 
+// Sensoren ein aus 
+#define GAM                             // Ein/Aus GAM
+#define ESC                             // Ein/Aus ESC
+
 // Baudrate UART
 #define SERIAL_COM_SPEED    19200
 
@@ -29,6 +33,12 @@
 
 //Graupner #33620 Electric Air Module (EAM)
 #define HOTT_TELEMETRY_GEA_SENSOR_ID    0x8E // Electric Air Module ID
+#define HOTT_BINARY_MODE_REQUEST_ID	0x80
+#define HOTT_TEXT_MODE_REQUEST_ID       0x7f
+#define HOTT_TELEMETRY_GAM_SENSOR_ID    0x8d
+
+//Graupner #  Telemetry Speed Controller 70A ESC (ESC)
+#define HOTT_TELEMETRY_ESC_SENSOR_ID    0x8C // ESC Module ID
 #define HOTT_BINARY_MODE_REQUEST_ID	0x80
 #define HOTT_TEXT_MODE_REQUEST_ID       0x7f
 #define HOTT_TELEMETRY_GAM_SENSOR_ID    0x8d
@@ -151,6 +161,77 @@ struct HOTT_GAM_MSG {
   byte parity;                          //#45 CHECKSUM CRC/Parity (calculated dynamicaly)
 };
 
+// ESC MODULE 
+struct HOTT_ESC_MSG {
+  byte start_byte;                      //#01 start byte constant value 0x7c
+  byte esc_sensor_id;             	//#02 EAM sensort id. constat value 0x8c=GENRAL AIR MODULE
+  byte warning_beeps;                   //#03 1=A 2=B ... 0x1a=Z  0 = no alarm
+					        /* VOICE OR BIP WARNINGS
+  					        Alarme sonore A.. Z, octet correspondant 1 à 26
+          					0x00  00  0  No alarm
+          					0x01  01  A  
+          					0x02  02  B  Negative Difference 2 B
+          				        0x03  03  C  Negative Difference 1 C
+          					0x04  04  D  
+          					0x05  05  E  
+          					0x06  06  F  Min. Sensor 1 temp. F
+          					0x07  07  G  Min. Sensor 2 temp. G
+          					0x08  08  H  Max. Sensor 1 temp. H
+              				        0x09  09  I  Max. Sensor 2 temp. I
+              					0xA   10  J  Max. Sens. 1 voltage J
+        					0xB   11  K  Max. Sens. 2 voltage K
+        		                        0xC   12  L  
+        					0xD   13  M  Positive Difference 2 M
+        					0xE   14  N  Positive Difference 1 N
+        					0xF   15  O  Min. Altitude O
+        					0x10  16  P  Min. Power Voltage P    // We use this one for Battery Warning
+        					0x11  17  Q  Min. Cell voltage Q
+        					0x12  18  R  Min. Sens. 1 voltage R
+        					0x13  19  S  Min. Sens. 2 voltage S
+        					0x14  20  T  Minimum RPM T
+        					0x15  21  U  
+        					0x16  22  V  Max. used capacity V
+        					0x17  23  W  Max. Current W
+        					0x18  24  X  Max. Power Voltage X
+        					0x19  25  Y  Maximum RPM Y
+        					0x1A  26  Z  Max. Altitude Z
+        				        */
+  byte sensor_id;             	        //#04 constant value 0xd0
+  byte alarm_invers1;                   //#05 alarm bitmask. Value is displayed inverted
+				          //Bit#  Alarm field
+					  // 0    all cell voltage
+					  // 1    Battery 1
+					  // 2    Battery 2
+					  // 3    Temperature 1
+					  // 4    Temperature 2
+					  // 5    Fuel
+					  // 6    mAh
+					  // 7    Altitude
+  byte alarm_invers2;                   //#05 alarm bitmask. Value is displayed inverted
+    					  //Bit#  Alarm Field
+    					  // 0    main power current
+    					  // 1    main power voltage
+    					  // 2    Altitude
+    					  // 3    m/s                            
+      					  // 4    m/3s
+      					  // 5    unknown
+    					  // 6    unknown
+    					  // 7    "ON" sign/text msg active
+  uint16_t  voltage;                    //#06 voltage 0.1V steps. 55 = 5.5V 		        
+  uint16_t  voltage_min;                //#07 voltage min 0.1V steps. 55 = 5.5V 		
+  uint16_t batt_cap;                    //#08 used battery capacity in 10mAh steps
+  byte temp1;                           //#09 Temperature 1. Offset of 20. a value of 20 = 0°C
+  byte temp1_max;                       //#10 Temperature 1. max Offset of 20. a value of 20 = 0°C
+  uint16_t current;                     //#11 current in 0.1A steps 100 == 10,0A
+  uint16_t current_max;                 //#12 current max in 0.1A steps 100 == 10,0A
+  uint16_t RPM;                         //#13 RPM in 10 RPM steps. 300 = 3000rpm
+  uint16_t RPM_max;                     //#14 RPM max in 10 RPM steps. 300 = 3000rpm
+  byte temp2;                           //#15 Temperature 2. Offset of 20. a value of 20 = 0°C
+  byte temp2_max;                       //#16 Temperature 2. max Offset of 20. a value of 20 = 0°C
+  byte dummy[19];                       //#17-43 Dummy
+  byte stop_byte;                       //#44 stop byte 0x7D
+  byte parity;                          //#45 CHECKSUM CRC/Parity (calculated dynamicaly)
+};
 
 class GMessage {
 
@@ -164,6 +245,7 @@ private:
   char * _hott_invert_all_chars(char *str);
   char * _hott_invert_chars(char *str, int cnt);
   void init_gam_msg();
+    void init_esc_msg();
   void init_gps_msg();
   void init_vario_msg();
   void send(int lenght);
