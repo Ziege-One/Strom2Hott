@@ -203,30 +203,31 @@ void GMessage::main_loop(){
             // init structure
                init_gam_msg();
           
-            
-            // Set values to 0 for clean screen
-               setTemp (0,2);                       // nicht verwenden
-               setTemp (lipo.getTemp(),1);          // Interne Temperatur Arduino Mini Pro
-               setClimbrate_M3(120);                // nicht verwenden
-               setVoltage2(0);                      // nicht verwenden
-              
-            // Use values of the GPS
-               setAltitudeInMeters (500);           // nicht verwenden
-               setClimbrate(30000);                 // nicht verwenden
-               setSpeed(0);                         // nicht verwenden
-
-            // Set Lipo       
-              setLipo (0,1);                        // nicht verwenden
-              setLipo (0,2);                        // nicht verwenden
-              setLipo (0,2);                        // nicht verwenden
-              setLipo (0,2);                        // nicht verwenden
-              setLipo (0,2);                        // nicht verwenden
-              setLipo (0,2);                        // nicht verwenden
-              
-            // set lipo voltages on Battery 1 and Main voltage
-              setVoltage1(lipo.getVolt ());    // Batt 1 -> Spannung Lipo
-              setVoltage2(lipo.getVCC ());     // Batt 2 -> Spannung Arduino            
-              setMainVoltage(lipo.getVolt ()); // Main   -> Spannung Lipo
+               hott_gam_msg->cell[1] = 0;              
+               hott_gam_msg->cell[2] = 0;
+               hott_gam_msg->cell[3] = 0;
+               hott_gam_msg->cell[4] = 0;
+               hott_gam_msg->cell[5] = 0;
+               hott_gam_msg->cell[6] = 0; 
+               hott_gam_msg->Battery1 = (lipo.getVolt ()) * 10 ;        
+               hott_gam_msg->Battery2 = (lipo.getVCC ()) * 10 ;       
+               hott_gam_msg->temperature1 = (lipo.getTemp()) + 20 ;        
+               hott_gam_msg->temperature2 = 20;        
+               hott_gam_msg->fuel_procent = 0;        
+               hott_gam_msg->fuel_ml = 0;         
+               hott_gam_msg->rpm = 0;             
+               hott_gam_msg->altitude = 500;        
+               hott_gam_msg->climbrate_L = 30000;     
+               hott_gam_msg->climbrate3s = 120;         
+               hott_gam_msg->current = (lipo.getCurrent()) * 10 ;         
+               hott_gam_msg->main_voltage = (lipo.getVolt ()) * 10 ;    
+               hott_gam_msg->batt_cap = (lipo.getBattCap()) / 10 ;       
+               hott_gam_msg->speed = 0;           
+               hott_gam_msg->min_cell_volt = 0;       
+               hott_gam_msg->min_cell_volt_num = 0;   
+               hott_gam_msg->rpm2 = 0;                        
+               hott_gam_msg->general_error_number = 0;
+               hott_gam_msg->pressure = 0;           
               
             // Alarmmanagement
                time=millis();
@@ -235,7 +236,7 @@ void GMessage::main_loop(){
                      // Check for alarm beep
                      if (((lipo.getVolt ()*100) < alarm_min_volt) && alarm_on_off_batt1 == 1)
                      {
-                     hott_txt_msg->warning_beeps =  ALARME_TENSION_SEUIL    ; // alarm beep or voice
+                     hott_txt_msg->warning_beeps =  0x10    ; // alarm beep or voice
                      }
                      if (((lipo.getBattCap()) > alarm_max_used) && alarm_on_off_batt1 == 1)
                      {
@@ -243,16 +244,8 @@ void GMessage::main_loop(){
                      }                      
                  lastTime=time;  // reset timer
                }
-            
-               // Fuel gauge display
-               setFuelPercent (0);    // nicht verwenden
-               // View percentage 
-               setFuelMilliliters(0); // nicht verwenden
-               // current
-               setCurrent (lipo.getCurrent()); //Strom
-               // batt_cap
-               setBatt_Cap (lipo.getBattCap()); //Kapazität
-               
+
+                 
             // sending all data
             send(sizeof(struct HOTT_GAM_MSG));
             break;
@@ -266,32 +259,21 @@ void GMessage::main_loop(){
                init_esc_msg();
          
                hott_esc_msg->voltage = (lipo.getVolt ()) * 10 ;               
-				        
                hott_esc_msg->voltage_min = (lipo.getVolt_min ()) * 10 ;                
-					
-               hott_esc_msg->current = (lipo.getCurrent()) * 10 ;        
-					
-               hott_esc_msg->current_max = (lipo.getCurrent_max()) * 10 ;        
-				        
-               hott_esc_msg->temp1 = (lipo.getTemp()) + 20;                   
-				        
-               hott_esc_msg->temp1_max = 20;                    
-				        
-               hott_esc_msg->RPM = 0;   
-               
-               hott_esc_msg->RPM_max= 0;               
-				        
-               hott_esc_msg->batt_cap = (lipo.getBattCap()) / 10;            	
-					
-               hott_esc_msg->temp2 = 20;                   
-				        
-               hott_esc_msg->temp2_max = 20;      
-               
+               hott_esc_msg->current = (lipo.getCurrent()) * 10 ;        			
+               hott_esc_msg->current_max = (lipo.getCurrent_max()) * 10 ;        			        
+               hott_esc_msg->temp1 = (lipo.getTemp()) + 20;                   		        
+               hott_esc_msg->temp1_max = 20;                    		        
+               hott_esc_msg->RPM = 0;               
+               hott_esc_msg->RPM_max= 0;               		        
+               hott_esc_msg->batt_cap = (lipo.getBattCap()) / 10;            				
+               hott_esc_msg->temp2 = 20;                   	        
+               hott_esc_msg->temp2_max = 20;             
                
             // sending all data
             send(sizeof(struct HOTT_ESC_MSG));
             break;
-          } //end case GAM*/
+          } //end case ESC*/
      
         } //end case octet 2
         break;
@@ -626,113 +608,6 @@ void GMessage::main_loop(){
 }
 
 
-//////////////////////////////////////////////////
-// Main voltage (0.1V resolution)
-void GMessage::setMainVoltage(float tension){
-  hott_gam_msg->main_voltage = (uint16_t) (tension * 10);
-}
-
-// battery 1 (0.1V resolution)
-void GMessage::setVoltage1(float volt){
-  hott_gam_msg->Battery1 =  (uint16_t) (volt * 10); 
-}
-
-// battery 2 (0.1V resolution)
-void GMessage::setVoltage2(float volt){
-  hott_gam_msg->Battery2 = (uint16_t) (volt * 10); 
-}
-
-
-// Element n Lipo (0.2V resolution)
-void GMessage::setLipo(float volt, int lipo){
-
-  if (lipo >= 1 and lipo <= 6)
-  {
-    lipo--;
-    hott_gam_msg->cell[lipo] =  (uint16_t) 100 * volt / 2 ; 
-    
-    if (volt/2 <= hott_gam_msg->min_cell_volt || hott_gam_msg->min_cell_volt ==0)
-    {
-      hott_gam_msg->min_cell_volt = (uint16_t) 100 * volt/2 ;
-      hott_gam_msg->min_cell_volt_num = lipo;
-    }
-  }
-}
-
-
-// Relative altitude in meters : -500 / +9999 [m]
-void GMessage::setAltitudeInMeters(uint16_t alti){
-  hott_gam_msg->altitude = alti + 500;
-}
-
-// temperature : -20 a +235° C 
-// 
-void GMessage::setTemp(int temp, int capteur){
-  if(temp < -20)
-    temp = -20;
-  else if(temp > 234)
-    temp = 235;
-  if (capteur < 1)
-    capteur = 1;
-  if (capteur > 2)
-    capteur = 2; 
-  if (capteur == 1)
-    hott_gam_msg->temperature1 = temp + 20;
-  else if (capteur == 2)
-    hott_gam_msg->temperature2 = temp + 20;
-}
-
-// tank level : 0%, 25%, 50%, 75%, 100%  
-// 
-void GMessage::setFuelPercent(uint8_t pourcent){
-  if(pourcent > 100)
-    pourcent = 100;
-  else if(pourcent < 0)
-    pourcent = 0;
-  hott_gam_msg->fuel_procent = pourcent ;
-}
-
-// tank level ml : 0 a 65535 ml
-// 
-void GMessage::setFuelMilliliters(uint16_t ml){
-  hott_gam_msg->fuel_ml = ml ;
-}
-
-// rotation : 0 a 655350 tr/min
-void GMessage::setRPM(uint16_t rpm){
-  hott_gam_msg->rpm = rpm ;
-} 
-
-// Set climbrates
-void GMessage::setClimbrate(uint16_t climb_L){
-  hott_gam_msg->climbrate_L =  climb_L;
-}
-void GMessage::setClimbrate_M3(int climb3s){
-  hott_gam_msg->climbrate3s =  climb3s;
-}
-
-// Set speed 
-void GMessage::setSpeed(float speed){
-  hott_gam_msg->speed =  (int) speed;
-}
-
-// Set current 1 = 0.1A
-void GMessage::setCurrent(float a){
-  hott_gam_msg->current = (uint16_t) (a * 10); 
-}
-// Set batt_cap 1 = 10mAh
-void GMessage::setBatt_Cap(float ma){
-  hott_gam_msg->batt_cap = (uint16_t) (ma / 10); 
-}
-
-
-//
-// Audible alarm on radio
-//
-void GMessage::alarme (uint8_t son){
-  hott_gam_msg->warning_beeps = son;
-}
-
 
 
 void GMessage::_hott_send_text_msg() {
@@ -740,7 +615,6 @@ void GMessage::_hott_send_text_msg() {
     if (*_hott_msg_ptr == 0)
       *_hott_msg_ptr = 0x20;
   }  
-  //_hott_send_msg(_hott_serial_buffer, sizeof(struct HOTT_TEXTMODE_MSG));
   send(sizeof(struct HOTT_TEXTMODE_MSG));
 }
 
@@ -770,12 +644,6 @@ void GMessage::_hott_invert_ligne(int ligne) {
         hott_txt_msg->text[ligne][i] = (byte)(0x80 + (byte)hott_txt_msg->text[ligne][i]);
     }
 }
-
-
-uint32_t GMessage::seconds() {
-  return millis() / 1000;
-}
-
 
 void GMessage::debug(){
    // FOR DEBUG
