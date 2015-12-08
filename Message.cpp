@@ -288,8 +288,8 @@ void GMessage::main_loop(){
         static byte ligne_select = 4 ;
         static int8_t ligne_edit = -1 ;
         hott_txt_msg->start_byte = 0x7b;
-        hott_txt_msg->esc = 0;
-        hott_txt_msg->warning_beeps = 0;
+        hott_txt_msg->esc = 0x00;
+        hott_txt_msg->warning_beeps = 0x00;
         
         memset((char *)&hott_txt_msg->text, 0x20, HOTT_TEXTMODE_MSG_TEXT_LEN);
         hott_txt_msg->stop_byte = 0x7d;
@@ -301,7 +301,8 @@ void GMessage::main_loop(){
         else
         {
           if (id_sensor == (HOTT_TELEMETRY_GAM_SENSOR_ID & 0x0f)) 
-          {
+          { 
+            hott_txt_msg->esc = HOTT_TELEMETRY_GAM_SENSOR_TEXT;
             switch (page_settings) { //SETTINGS
               
               case 1://PAGE 1 SETTINGS
@@ -603,6 +604,7 @@ void GMessage::main_loop(){
         break;
 
       }
+      break;
     }	
   }
 }
@@ -653,5 +655,6 @@ void GMessage::debug(){
     Serial.print("BattCap:"); Serial.print(lipo.getBattCap(), 0);Serial.println("mA");
     Serial.print("VCC:"); Serial.print(lipo.getVCC(), 2);Serial.println("V");
     Serial.print("Temp:"); Serial.print(lipo.getTemp(), 2);Serial.println("*C");
+
    
 }

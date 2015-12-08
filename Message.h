@@ -28,25 +28,30 @@
 #define HOTT_KEY_LEFT   7
 
 // Hott protocol v4 delay
-#define HOTTV4_TX_DELAY 1000
+#define HOTTV4_TX_DELAY 650
 
 #define HOTT_BINARY_MODE_REQUEST_ID     0x80
 #define HOTT_TEXT_MODE_REQUEST_ID       0x7f
 
 //Graupner #General Air Module (GAM) 
 #define HOTT_TELEMETRY_GAM_SENSOR_ID    0x8d
+#define HOTT_TELEMETRY_GAM_SENSOR_TEXT  0xd0
 
 //Graupner # Electric Air Module module (EAM)
 #define HOTT_TELEMETRY_EAM_SENSOR_ID    0x8e
+#define HOTT_TELEMETRY_EAM_SENSOR_TEXT  0xe0
    
 //Graupner # GPS Module (GPS)
 #define HOTT_TELEMETRY_GPS_SENSOR_ID    0x8a
+#define HOTT_TELEMETRY_GPS_SENSOR_TEXT  0xa0
           
 //Graupner # Vario Sensor Module (VARIO)
 #define HOTT_TELEMETRY_VARIO_SENSOR_ID  0x89
+#define HOTT_TELEMETRY_VARIO_SENSOR_TEXT0x90
 
 //Graupner #  Telemetry Speed Controller 70A ESC (ESC)
 #define HOTT_TELEMETRY_ESC_SENSOR_ID    0x8C 
+#define HOTT_TELEMETRY_ESC_SENSOR_TEXT  0xC0
 
 // String for text mode
 #define HOTT_TEXTMODE_MSG_TEXT_LEN 168
