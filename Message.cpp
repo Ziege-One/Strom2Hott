@@ -294,7 +294,7 @@ void GMessage::main_loop(){
         memset((char *)&hott_txt_msg->text, 0x20, HOTT_TEXTMODE_MSG_TEXT_LEN);
         hott_txt_msg->stop_byte = 0x7d;
 
-        if (id_key == HOTT_KEY_LEFT && page_settings == 4)
+        if (id_key == HOTT_KEY_LEFT && page_settings == 1)
         {   
           hott_txt_msg->esc = 0x01;
         }
@@ -415,7 +415,7 @@ void GMessage::main_loop(){
                     // Showing page 1
                     
                     //line 0:
-                    snprintf((char *)&hott_txt_msg->text[0],21," Alarms >");
+                    snprintf((char *)&hott_txt_msg->text[0],21," Alarms           <>");
                     //line 1:
                     snprintf((char *)&hott_txt_msg->text[1],21,"Volt: %i.%iv",(int) lipo.getVolt (), ((int) (lipo.getVolt ()*100)) % 100);
                     //line 2:
@@ -432,7 +432,7 @@ void GMessage::main_loop(){
                     //line 6:
                     snprintf((char *)&hott_txt_msg->text[6],21," Alarm repeat: %is",(alarm_interval/1000));
                     //line 7:
-                    snprintf((char *)&hott_txt_msg->text[7],21,"Strom2HoTT  %d/1",page_settings); //Showing page number running down the screen to the right
+                    snprintf((char *)&hott_txt_msg->text[7],21,"Strom2HoTT  %d/2",page_settings); //Showing page number running down the screen to the right
                     
                     hott_txt_msg->text[ligne_select][0] = '>';
                     _hott_invert_ligne(ligne_edit);
@@ -560,7 +560,7 @@ void GMessage::main_loop(){
                     
                     // Showing page 2 settings
                     //line 0:                                  
-                    snprintf((char *)&hott_txt_msg->text[0],21," LIPO CAL   <");
+                    snprintf((char *)&hott_txt_msg->text[0],21," LIPO CAL         <");
                     //line 1:
                     snprintf((char *)&hott_txt_msg->text[1],21,"Volt: %i.%iv",(int) lipo.getVolt (), ((int) (lipo.getVolt ()*100)) % 100);
                     //line 2:
@@ -574,7 +574,7 @@ void GMessage::main_loop(){
                     //line 6:
                     snprintf((char *)&hott_txt_msg->text[6],21," Cur. COEF: %i/10mA",(Current_COEF));
                     //line 7:
-                    snprintf((char *)&hott_txt_msg->text[7],21,"Strom2HoTT  %d/1",page_settings); //Showing page number running down the screen to the right
+                    snprintf((char *)&hott_txt_msg->text[7],21,"Strom2HoTT  %d/2",page_settings); //Showing page number running down the screen to the right
                     int Volt_Offset;
 
                     hott_txt_msg->text[ligne_select][0] = '>';
