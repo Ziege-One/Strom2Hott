@@ -45,7 +45,7 @@
 #define LEDPIN_OFF        PORTB &= ~(1<<5);
 #define LEDPIN_ON         PORTB |= (1<<5);
 
-#define Debug                             // Ein/Aus Debugging
+//#define Debug                             // Ein/Aus Debugging
 
 // Time interval [ms] for display updates:
 const unsigned long DISPLAY_INTERVAL = 5000;

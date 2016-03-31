@@ -19,15 +19,15 @@ unsigned long last_time = 0;
 float time_elapsed = 0.0f;
 
 //Calculate this scalse factor here once to save cycles
-float secound_scale = 1000.0f / 3600.0f;
+float secound_scale = 1000.0f / 3600.0f;  
 
 //Internal Values
 float Volt = 0.0f;
 float Volt_min = 50.0f;
-  int VoltDigi = 0; 
+float VoltDigi = 0.0f; 
 float Current = 0.0f;
 float Current_max = 0.0f;
-  int CurrentDigi = 0;
+float CurrentDigi = 0.0f;
 float Capacity_Used = 0.0f;
 
 float VCC = 0.0f;
@@ -36,66 +36,30 @@ float Temp = 0.0f;
 
 float Sensor::getVolt() { return Volt; }
 float Sensor::getVolt_min() { return Volt_min; }
-int   Sensor::getVoltDigi() {return VoltDigi; }
+float Sensor::getVoltDigi() {return VoltDigi; }
 float Sensor::getCurrent() { return Current; }
 float Sensor::getCurrent_max() { return Current_max; }
-int   Sensor::getCurrentDigi() {return CurrentDigi; }
+float Sensor::getCurrentDigi() {return CurrentDigi; }
 float Sensor::getBattCap() { return Capacity_Used; }
 
 float Sensor::getVCC() { return VCC; }
 float Sensor::getTemp() { return Temp; }
 
 void Sensor::ReadSensor(){
-  // Spannung
-  static float MV1_Volt = 0.0;
-  static float MV2_Volt = 0.0;
-  static float MV3_Volt = 0.0;
-  static float MV4_Volt = 0.0;
-  static float MV5_Volt = 0.0;
-  static float MV6_Volt = 0.0;
-  static float MV7_Volt = 0.0;
-  static float MV8_Volt = 0.0;
-  static float MV9_Volt = 0.0;
-  float MV10_Volt;
-
-  VoltDigi = analogRead(A0);
-  MV10_Volt =  (VoltDigi - (message2.getVoltOffset()))* ((message2.getVoltCOEF()) * 0.0001);;
-  Volt = (MV1_Volt + MV2_Volt + MV3_Volt + MV4_Volt + MV5_Volt + MV6_Volt + MV7_Volt + MV8_Volt + MV9_Volt + MV10_Volt) / 10; // filter (average of 10 samples)
-  MV1_Volt = MV2_Volt; // shift
-  MV2_Volt = MV3_Volt;
-  MV3_Volt = MV4_Volt;
-  MV4_Volt = MV5_Volt;
-  MV5_Volt = MV6_Volt;
-  MV6_Volt = MV7_Volt;
-  MV7_Volt = MV8_Volt;
-  MV8_Volt = MV9_Volt;
-  MV9_Volt = MV10_Volt;
-  
-  // Strom
-  static float MV1_Current = 0.0;
-  static float MV2_Current = 0.0;
-  static float MV3_Current = 0.0;
-  static float MV4_Current = 0.0;
-  static float MV5_Current = 0.0;
-  static float MV6_Current = 0.0;
-  static float MV7_Current = 0.0;
-  static float MV8_Current = 0.0;
-  static float MV9_Current = 0.0;
-  float MV10_Current; 
-
-  CurrentDigi = analogRead(A1);
-  MV10_Current =  (CurrentDigi - (message2.getCurrentOffset()))* ((message2.getCurrentCOEF()) * 0.0001);
-  Current = (MV1_Current + MV2_Current + MV3_Current + MV4_Current + MV5_Current + MV6_Current + MV7_Current + MV8_Current + MV9_Current + MV10_Current) / 10; // filter (average of 10 samples)
-  MV1_Current = MV2_Current; // shift
-  MV2_Current = MV3_Current;
-  MV3_Current = MV4_Current;
-  MV4_Current = MV5_Current;
-  MV5_Current = MV6_Current;
-  MV6_Current = MV7_Current;
-  MV7_Current = MV8_Current;
-  MV8_Current = MV9_Current;
-  MV9_Current = MV10_Current;
-
+  // Spannung + Strom
+      
+for (uint8_t i = 0; i < 50; i++)
+  {
+    VoltDigi += analogRead(A0);     // Spannung
+    CurrentDigi += analogRead(A1);  // Strom
+  }
+   
+  VoltDigi = VoltDigi / 50;       // Durchschnitt der Meßungen
+  CurrentDigi = CurrentDigi / 50;
+     
+  Volt = (VoltDigi - (message2.getVoltOffset()))* ((message2.getVoltCOEF()) * 0.0001);            // Skalieren
+  Current = (CurrentDigi - (message2.getCurrentOffset()))* ((message2.getCurrentCOEF()) * 0.0001);
+    
   // Kapazität
   current_time = millis();
   //Calculate the used Capacity in [mAh]
