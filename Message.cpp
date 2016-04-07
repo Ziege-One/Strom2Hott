@@ -61,14 +61,14 @@ unsigned long time=millis();      // in ms
 
 // Messbereiche im Eprom
 int Volt_Offset;
-int Volt_COEF;
+int Volt_SCALE;
 int Current_Offset;
-int Current_COEF;
+int Current_SCALE;
 
 int GMessage::getVoltOffset() {return Volt_Offset; }
-int GMessage::getVoltCOEF() {return Volt_COEF; }
+int GMessage::getVoltCOEF() {return Volt_SCALE; }
 int GMessage::getCurrentOffset() {return Current_Offset; }
-int GMessage::getCurrentCOEF() {return Current_COEF; }
+int GMessage::getCurrentCOEF() {return Current_SCALE; }
 
 // For communication
 static uint8_t octet1 = 0;  // reception
@@ -88,9 +88,9 @@ static uint8_t octet2 = 0;  // reception
 #define adr_eprom_alarm_interval 8       // Audio warning alarm interval 
 // Messbereiche im Eprom
 #define adr_eprom_volt_offset 10         // Volt Offset in digi 
-#define adr_eprom_volt_coef 12           // Volt COEF in x/10 mV
+#define adr_eprom_Volt_SCALE 12           // Volt COEF in x/10 mV
 #define adr_eprom_current_offset 14      // Current Offset in digi 
-#define adr_eprom_current_coef 16        // Current COEF in x/10 mA 
+#define adr_eprom_Current_SCALE 16        // Current COEF in x/10 mA 
 
 GMessage::GMessage(){
 
@@ -111,9 +111,9 @@ void GMessage::init(){
     write_eprom(adr_eprom_alarm_on_off_batt1,alarm_on_off_batt1);
     // Messbereiche im Eprom
     write_eprom(adr_eprom_volt_offset,OffsetVolt);
-    write_eprom(adr_eprom_volt_coef,COEF_Volt);
+    write_eprom(adr_eprom_Volt_SCALE,SCALE_Volt);
     write_eprom(adr_eprom_current_offset,OffsetCurrent);
-    write_eprom(adr_eprom_current_coef,COEF_Current);
+    write_eprom(adr_eprom_Current_SCALE,SCALE_Current);
   }
   // Read saved values from EEPROM
     // alarm min on battery
@@ -126,9 +126,9 @@ void GMessage::init(){
     alarm_on_off_batt1 = read_eprom(adr_eprom_alarm_on_off_batt1); // 0=FALSE/Disable 1=TRUE/Enable
     // Messbereiche im Eprom
     Volt_Offset = read_eprom(adr_eprom_volt_offset);
-    Volt_COEF = read_eprom(adr_eprom_volt_coef);
+    Volt_SCALE = read_eprom(adr_eprom_Volt_SCALE);
     Current_Offset = read_eprom(adr_eprom_current_offset);
-    Current_COEF = read_eprom(adr_eprom_current_coef);
+    Current_SCALE = read_eprom(adr_eprom_Current_SCALE);
     
 
 }
@@ -468,46 +468,46 @@ void GMessage::main_loop(){
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 3 )
                       Volt_Offset-=1;
                     else if (id_key == HOTT_KEY_RIGHT && ligne_select == 3 )
-                      Volt_Offset+=10;
+                      Volt_Offset+=50;
                     else if (id_key == HOTT_KEY_LEFT && ligne_select == 3 )
-                      Volt_Offset-=10;                      
+                      Volt_Offset-=50;                      
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 3)
                       {
                        ligne_edit = -1 ;
                        write_eprom(adr_eprom_volt_offset,Volt_Offset);
                        }
 
-                    else if (Volt_Offset>2000) // not over 2000
+                    else if (Volt_Offset>5000) // not over 2000
                         {
-                          Volt_Offset=2000;
+                          Volt_Offset=5000;
                         } 
                     else if (Volt_Offset<0)  // not behind 0
                         {
-                       Volt_Offset=0;
+                       Volt_Offset=2500;
                         }
                     
                     //LINE 4 SELECTED = text[4]
                     else if (id_key == HOTT_KEY_UP && ligne_select == 4 )
-                      Volt_COEF+=1;
+                      Volt_SCALE+=1;
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 4 )
-                      Volt_COEF-=1;
+                      Volt_SCALE-=1;
                     else if (id_key == HOTT_KEY_RIGHT && ligne_select == 4 )
-                      Volt_COEF+=10;
+                      Volt_SCALE+=50;
                     else if (id_key == HOTT_KEY_LEFT && ligne_select == 4 )
-                      Volt_COEF-=10;                         
+                      Volt_SCALE-=50;                         
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 4)
                       {
                        ligne_edit = -1 ;
-                       write_eprom(adr_eprom_volt_coef,Volt_COEF);
+                       write_eprom(adr_eprom_Volt_SCALE,Volt_SCALE);
                        }
 
-                    else if (Volt_COEF>2000) // not over 2000
+                    else if (Volt_SCALE>4000) // not over 2000
                         {
-                          Volt_COEF=2000;
+                          Volt_SCALE=4000;
                         } 
-                    else if (Volt_COEF<1)  // not behind 0
+                    else if (Volt_SCALE<1)  // not behind 0
                         {
-                       Volt_COEF=1;
+                       Volt_SCALE=2000;
                         }
                     
                     //LINE 5 SELECTED = text[5]
@@ -516,46 +516,46 @@ void GMessage::main_loop(){
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 5 )
                       Current_Offset-=1;
                     else if (id_key == HOTT_KEY_RIGHT && ligne_select == 5 )
-                      Current_Offset+=10;
+                      Current_Offset+=50;
                     else if (id_key == HOTT_KEY_LEFT && ligne_select == 5 )
-                      Current_Offset-=10;                         
+                      Current_Offset-=50;                         
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 5)
                       {
                        ligne_edit = -1 ;
                        write_eprom(adr_eprom_current_offset,Current_Offset);
                        }
 
-                    else if (Current_Offset>2000) // not over 2000
+                    else if (Current_Offset>5000) // not over 2000
                         {
-                          Current_Offset=2000;
+                          Current_Offset=5000;
                         } 
                     else if (Current_Offset<0)  // not behind 0
                         {
-                       Current_Offset=0;
+                       Current_Offset=2500;
                         }
                     
                     //LINE 6 SELECTED = text[6]
                     else if (id_key == HOTT_KEY_UP && ligne_select == 6 )
-                      Current_COEF+=1;
+                      Current_SCALE+=1;
                     else if (id_key == HOTT_KEY_DOWN && ligne_select == 6 )
-                      Current_COEF-=1;
+                      Current_SCALE-=1;
                     else if (id_key == HOTT_KEY_RIGHT && ligne_select == 6 )
-                      Current_COEF+=10;
+                      Current_SCALE+=50;
                     else if (id_key == HOTT_KEY_LEFT && ligne_select == 6 )
-                      Current_COEF-=10;                        
+                      Current_SCALE-=50;                        
                     else if (id_key == HOTT_KEY_SET && ligne_edit == 6)
                       {
                        ligne_edit = -1 ;
-                       write_eprom(adr_eprom_current_coef,Current_COEF);
+                       write_eprom(adr_eprom_Current_SCALE,Current_SCALE);
                        }
 
-                    else if (Current_COEF>2000) // not over 2000
+                    else if (Current_SCALE>4000) // not over 2000
                         {
-                          Current_COEF=2000;
+                          Current_SCALE=4000;
                         } 
-                    else if (Current_COEF<1)  // not behind 0
+                    else if (Current_SCALE<1)  // not behind 0
                         {
-                       Current_COEF=1000;
+                       Current_SCALE=2000;
                         }                    
                     
                     // Showing page 2 settings
@@ -566,13 +566,13 @@ void GMessage::main_loop(){
                     //line 2:
                     snprintf((char *)&hott_txt_msg->text[2],21,"Current: %i.%iA",(int) lipo.getCurrent(), ((int) (lipo.getCurrent()*100)) % 100);
                     //line 3:
-                    snprintf((char *)&hott_txt_msg->text[3],21," Volt Off: %idigi",(Volt_Offset));
+                    snprintf((char *)&hott_txt_msg->text[3],21," Volt Off: %imV",(Volt_Offset));
                     //line 4:
-                    snprintf((char *)&hott_txt_msg->text[4],21," Volt COEF: %i/10mv",(Volt_COEF)); 
+                    snprintf((char *)&hott_txt_msg->text[4],21,"    SCALE: %i.%imV/V",(int) (Volt_SCALE/10) , (int) (Volt_SCALE % 10)); 
                     //line 5:
-                    snprintf((char *)&hott_txt_msg->text[5],21," Cur. Off: %idigi",(Current_Offset));
+                    snprintf((char *)&hott_txt_msg->text[5],21," Cur. Off: %imV",(Current_Offset));
                     //line 6:
-                    snprintf((char *)&hott_txt_msg->text[6],21," Cur. COEF: %i/10mA",(Current_COEF));
+                    snprintf((char *)&hott_txt_msg->text[6],21,"    SCALE: %i.%imV/A",(int) Current_SCALE/10 , (int) (Current_SCALE % 10));
                     //line 7:
                     snprintf((char *)&hott_txt_msg->text[7],21,"Strom2HoTT  %d/2",page_settings); //Showing page number running down the screen to the right
                     int Volt_Offset;

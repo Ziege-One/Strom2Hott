@@ -57,8 +57,12 @@ for (uint8_t i = 0; i < 50; i++)
   VoltDigi = VoltDigi / 50;       // Durchschnitt der Meßungen
   CurrentDigi = CurrentDigi / 50;
      
-  Volt = (VoltDigi - (message2.getVoltOffset()))* ((message2.getVoltCOEF()) * 0.0001);            // Skalieren
-  Current = (CurrentDigi - (message2.getCurrentOffset()))* ((message2.getCurrentCOEF()) * 0.0001);
+  Volt = (VoltDigi - (0.2048 * message2.getVoltOffset()))* ((488281.25 / message2.getVoltCOEF()) * 0.0001);            // Skalieren
+  Current = (CurrentDigi - (0.2048 * message2.getCurrentOffset()))* ((488281.25 / message2.getCurrentCOEF()) * 0.0001);
+
+  // Nicht < 0
+  if (Volt < 0) Volt = 0.0;
+  if (Current < 0) Current = 0.0;
     
   // Kapazität
   current_time = millis();

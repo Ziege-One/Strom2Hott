@@ -11,16 +11,16 @@
 
   
 //AMP Sensor
-#define COEF_Volt 510     // /10mV pro Digi          
-#define COEF_Current 915  // /10mA pro Digi      
-#define OffsetVolt 0      // Digi Offset
-#define OffsetCurrent 0   // Digi Offset              
+#define SCALE_Volt 510     // /10mV pro V          
+#define SCALE_Current 915  // /10mV pro A      
+#define OffsetVolt 0      // mV Offset
+#define OffsetCurrent 0   // mV Offset              
 /*
 //ACS758 LCB 100U Default for Eprom
-#define COEF_Volt 181     // /10mV pro Digi          
-#define COEF_Current 1262 // /10mA pro Digi  
-#define OffsetVolt 0      // Digi Offset
-#define OffsetCurrent 129 // Digi Offset
+#define SCALE_Volt 181     // /10mV pro V          
+#define SCALE_Current 1262 // /10mV pro A  
+#define OffsetVolt 0      // mV Offset
+#define OffsetCurrent 129 // mV Offset
 */
 class Sensor{
 public:
